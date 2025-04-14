@@ -1,44 +1,19 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SlideBoard Plus for Teachers</title>
+  <title>SlideBoard for Teachers</title>
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/libs/pptxgen.bundle.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
+      padding: 2rem;
       background: #f9f9f9;
     }
-    header {
-      background: #4f46e5;
-      color: white;
-      padding: 2rem;
+    h1 {
       text-align: center;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-    header p {
-      margin-top: 0.5rem;
-      font-size: 1.1rem;
-    }
-    .hero-section {
-      text-align: center;
-      padding: 2rem;
-    }
-    .hero-section button {
-      padding: 1rem 2rem;
-      font-size: 1rem;
-      background: #10b981;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .app-section {
-      display: none;
-      padding: 2rem;
+      font-size: 2rem;
+      margin-bottom: 2rem;
     }
     .nav-buttons {
       display: flex;
@@ -92,23 +67,6 @@
       border-radius: 8px;
       padding: 1rem;
       cursor: move;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      transition: border 0.3s ease, box-shadow 0.3s ease;
-    }
-    .slide-thumbnail {
-      width: 80px;
-      height: 60px;
-      background: #e5e7eb;
-      border: 1px solid #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: #555;
-      border-radius: 4px;
-      flex-shrink: 0;
     }
     .export-button {
       margin-top: 1rem;
@@ -123,6 +81,112 @@
   </style>
 </head>
 <body>
-  <!-- TRUNCATED FOR BREVITY -->
+  <h1>SlideBoard for Teachers</h1>
+  <div class="nav-buttons">
+    <button>Lesson to Slides</button>
+    <button>Templates</button>
+    <button>Visual Aids</button>
+    <button>Interactive Tools</button>
+  </div>
+  <div class="main-layout">
+    <div class="textarea-section">
+      <h3>Lesson Plan to Slides</h3>
+      <textarea id="lessonInput" placeholder="Paste your structured lesson note here..."></textarea>
+      <button onclick="generateSlides()">Generate Slides</button>
+    </div>
+    <div class="slides-container" id="sampleSlides">
+      <button class="export-button" onclick="exportToPowerPoint()">Export to PPTX</button>
+    </div>
+  </div>
+  <script>
+    let reorderedSlides = [];
+    let draggedIdx = null;
+
+    function generateSlides() {
+      const text = document.getElementById('lessonInput').value;
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      let slides = [], currentSlide = '', title = '';
+
+      lines.forEach(line => {
+        if (/^(Grade Level|Subject|Topic|Duration|Lesson Objectives|Prior Knowledge|Introduction|Body of the Lesson|Key Concept|Body|Concept 1|Concept 2|Concept 3|Conclusion|Activity|Assessment|Extension)/i.test(line)) {
+          if (currentSlide) {
+            slides.push({ title, content: currentSlide });
+            currentSlide = '';
+          }
+          title = line;
+        } else {
+          currentSlide += `<p>${line}</p>`;
+        }
+      });
+
+      if (currentSlide) slides.push({ title, content: currentSlide });
+      reorderedSlides = slides;
+      renderSlides();
+    }
+
+    function renderSlides() {
+      const container = document.getElementById('sampleSlides');
+      container.innerHTML = '';
+      reorderedSlides.forEach((slide, idx) => {
+        const div = document.createElement('div');
+        div.className = 'slide-preview';
+        div.setAttribute('draggable', true);
+        div.setAttribute('data-index', idx);
+        div.innerHTML = `<h3>Slide ${idx + 1}: ${slide.title}</h3>${slide.content}`;
+        div.addEventListener('dragstart', dragStart);
+        div.addEventListener('dragover', dragOver);
+        div.addEventListener('drop', drop);
+        container.appendChild(div);
+      });
+
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'export-button';
+      exportBtn.innerText = 'Export to PPTX';
+      exportBtn.onclick = exportToPowerPoint;
+      container.appendChild(exportBtn);
+    }
+
+    function dragStart(e) {
+      draggedIdx = +e.target.getAttribute('data-index');
+    }
+
+    function dragOver(e) {
+      e.preventDefault();
+    }
+
+    function drop(e) {
+      e.preventDefault();
+      const dropIdx = +e.target.closest('.slide-preview').getAttribute('data-index');
+      const moved = reorderedSlides.splice(draggedIdx, 1)[0];
+      reorderedSlides.splice(dropIdx, 0, moved);
+      renderSlides();
+    }
+
+    async function exportToPowerPoint() {
+      if (typeof PptxGenJS === 'undefined') {
+        alert("PowerPoint export library failed to load. Please check your internet connection.");
+        return;
+      }
+
+      if (reorderedSlides.length === 0) {
+        alert("No slides available. Please generate slides first.");
+        return;
+      }
+
+      const pptx = new PptxGenJS();
+      pptx.defineLayout({ name: 'A4', width: 10, height: 5.625 });
+      pptx.layout = 'A4';
+
+      for (const slide of reorderedSlides) {
+        const sld = pptx.addSlide();
+        sld.background = { fill: "F0F4F8" };
+        sld.addText(slide.title, { x: 0.5, y: 0.3, fontSize: 22, bold: true, color: "003366" });
+        const content = slide.content.replace(/<[^>]+>/g, '');
+        sld.addText(content, { x: 0.5, y: 1, w: 9, h: 4, fontSize: 14, color: "222222" });
+      }
+
+      await pptx.writeFile("SlideBoard_Presentation.pptx");
+    }
+  </script>
 </body>
 </html>
