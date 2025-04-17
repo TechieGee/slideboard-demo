@@ -1,8 +1,27 @@
-
 <html>
 <head>
   <title>SlideBoard Basic</title>
-  <!-- Remove unsupported pptxgen script to avoid sandbox errors -->
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.11.0/libs/pptxgen.umd.js"></script>
+<script>
+  window.addEventListener('error', function (e) {
+    const errorBanner = document.createElement('div');
+    errorBanner.textContent = `❌ Script Error: ${e.message}`;
+    errorBanner.style.position = 'fixed';
+    errorBanner.style.bottom = '10px';
+    errorBanner.style.right = '10px';
+    errorBanner.style.padding = '10px 16px';
+    errorBanner.style.backgroundColor = '#fed7d7';
+    errorBanner.style.color = '#1a202c';
+    errorBanner.style.border = '1px solid #ccc';
+    errorBanner.style.fontSize = '14px';
+    errorBanner.style.fontWeight = 'bold';
+    errorBanner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
+    errorBanner.style.borderRadius = '0.5rem';
+    errorBanner.style.zIndex = '1000';
+    document.body.appendChild(errorBanner);
+    setTimeout(() => errorBanner.remove(), 5000);
+  });
+</script>
   <style>
     .slide-preview {
       border: 1px solid #ccc;
@@ -37,26 +56,35 @@
     <button class="rounded-2xl shadow px-4 py-2" onclick="navigate('interactiveTools')">Interactive Tools</button>
   </div>
   <div class="grid grid-cols-2 gap-6">
-    <!-- Templates, Visual Aids, Lesson Slides, and Interactive Tools sections -->
-    <!-- [REDACTED FOR BREVITY] -->
+    <div id="lessonSlides" class="feature-section rounded-2xl shadow p-4">
+      <div class="font-semibold text-lg mb-2">📄 Lesson Plan to Slides</div>
+      <textarea id="lessonInput" class="w-full h-40 p-2 rounded border" placeholder="Paste your structured lesson note here..."></textarea>
+      <button class="mt-2 px-4 py-2 rounded bg-blue-500 text-white" onclick="generateSlides()">Generate Slides</button>
+      <div id="sampleSlides"></div>
+      <button class="mt-4 px-4 py-2 rounded bg-green-600 text-white" onclick="saveOrder()">💾 Save Order</button>
+      <button class="mt-4 px-4 py-2 rounded bg-purple-600 text-white" onclick="exportToPPTX()">📄 Export to PPTX</button>
+    </div>
   </div>
-  <div class="text-center text-sm text-gray-500 mt-6">© 2025 SlideBoard Basic. Built to make teaching beautiful.</div>
   <script>
     let reorderedSlides = [];
     let draggedIdx = null;
+
     function navigate(section) {
       document.querySelectorAll('.feature-section').forEach(div => div.style.display = 'none');
       const target = document.getElementById(section);
       if (target) target.style.display = 'block';
     }
+
     function generateSlides() {
-      const textArea = document.getElementById('lessonInput');
-      if (!textArea) return;
-      const text = textArea.value;
+      const input = document.getElementById('lessonInput');
+      if (!input) return;
+      const text = input.value;
       const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
       let slides = [];
       let currentSlide = '';
       let title = '';
+
       lines.forEach((line) => {
         if (line.match(/^\s*(Grade Level|Subject|Topic|Duration|Lesson Objectives|Prior Knowledge|Introduction|Body of the Lesson|Key Concept|Body|Concept 1|Concept 2|Concept 3|Conclusion|Activity|Assessment|Extension)/i)) {
           if (currentSlide) {
@@ -68,12 +96,15 @@
           currentSlide += `<p>${line}</p>`;
         }
       });
+
       if (currentSlide) {
         slides.push({ title, content: currentSlide });
       }
+
       reorderedSlides = [...slides];
       renderSlides();
     }
+
     function renderSlides() {
       const output = document.getElementById('sampleSlides');
       if (!output) return;
@@ -90,51 +121,65 @@
         output.appendChild(slideDiv);
       });
     }
+
     function saveOrder() {
-      console.log('Saved slide order:', reorderedSlides);
-      alert('Slide order saved successfully!');
+      console.log("Saved slide order:", reorderedSlides);
+      alert("Slide order saved successfully!");
     }
+
     function dragStart(e) {
-      const index = e.target?.getAttribute('data-index');
-      if (index !== null) draggedIdx = +index;
+      draggedIdx = +e.target.getAttribute('data-index');
     }
+
     function dragOver(e) {
       e.preventDefault();
     }
+
     function drop(e) {
-      const dropTarget = e.target.closest('.slide-preview');
-      if (!dropTarget) return;
-      const dropIdx = +dropTarget.getAttribute('data-index');
-      if (draggedIdx === null || isNaN(dropIdx)) return;
+      const dropIdx = +e.target.closest('.slide-preview').getAttribute('data-index');
       const movedSlide = reorderedSlides.splice(draggedIdx, 1)[0];
       reorderedSlides.splice(dropIdx, 0, movedSlide);
       renderSlides();
     }
-    function addInteractiveSlide(type) {
-      reorderedSlides.push({
-        title: `Interactive Activity: ${type}`,
-        content: `<p>This slide will guide the class through a ${type} activity.</p>`
+
+    function exportToPPTX() {
+      if (typeof pptxgen === 'undefined') {
+        alert('pptxgen library failed to load. Please check your internet connection or CDN URL.');
+        return;
+      }
+      if (!reorderedSlides.length) {
+        alert('No slides to export. Please generate slides first.');
+        return;
+      }
+      console.log('Exporting slides with pptxgen...');
+      const pptx = new pptxgen();
+      reorderedSlides.forEach(slide => {
+        const slideObj = pptx.addSlide();
+        slideObj.addText(slide.title, { x: 0.5, y: 0.3, fontSize: 24, bold: true, color: '003366' });
+        const content = slide.content.replace(/<[^>]+>/g, '').trim();
+        slideObj.addText(content, { x: 0.5, y: 1, fontSize: 18, color: '000000', w: '90%', h: 5, wrap: true });
       });
-      renderSlides();
+      pptx.writeFile({ fileName: 'SlideBoard_Presentation.pptx' });
     }
-    function addVisualAidSlide(type) {
-      reorderedSlides.push({
-        title: `Visual Aid: ${type}`,
-        content: `<p>This slide includes a visual element using ${type}.</p>`
-      });
-      renderSlides();
-    }
-    function searchVisualAids() {
-      const input = document.getElementById('visualAidInput');
-      const buttons = document.querySelectorAll('#visualAidList button');
-      if (!input || !buttons.length) return;
-      const query = input.value.toLowerCase();
-      buttons.forEach(btn => {
-        const text = btn.textContent.toLowerCase();
-        btn.style.display = text.includes(query) ? 'block' : 'none';
-      });
-    }
-    window.onload = () => navigate('lessonSlides');
+
+    window.onload = () => {
+      const banner = document.createElement('div');
+      banner.textContent = (typeof pptxgen !== 'undefined') ? '✅ pptxgen is loaded and ready!' : '❌ pptxgen failed to load.';
+      banner.style.position = 'fixed';
+      banner.style.top = '10px';
+      banner.style.right = '10px';
+      banner.style.padding = '10px 16px';
+      banner.style.backgroundColor = (typeof pptxgen !== 'undefined') ? '#c6f6d5' : '#fed7d7';
+      banner.style.color = '#1a202c';
+      banner.style.border = '1px solid #ccc';
+      banner.style.fontSize = '14px';
+      banner.style.fontWeight = 'bold';
+      banner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
+      banner.style.borderRadius = '0.5rem';
+      banner.style.zIndex = '1000';
+      document.body.appendChild(banner);
+      navigate('lessonSlides');
+    };
   </script>
 </body>
 </html>
