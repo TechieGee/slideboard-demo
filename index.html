@@ -1,3 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>SlideBordBasic</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
 <html>
 <head>
   <title>SlideBoard Basic</title>
@@ -163,23 +173,27 @@
     }
 
     window.onload = () => {
-      const banner = document.createElement('div');
-      banner.textContent = (typeof pptxgen !== 'undefined') ? '✅ pptxgen is loaded and ready!' : '❌ pptxgen failed to load.';
-      banner.style.position = 'fixed';
-      banner.style.top = '10px';
-      banner.style.right = '10px';
-      banner.style.padding = '10px 16px';
-      banner.style.backgroundColor = (typeof pptxgen !== 'undefined') ? '#c6f6d5' : '#fed7d7';
-      banner.style.color = '#1a202c';
-      banner.style.border = '1px solid #ccc';
-      banner.style.fontSize = '14px';
-      banner.style.fontWeight = 'bold';
-      banner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
-      banner.style.borderRadius = '0.5rem';
-      banner.style.zIndex = '1000';
-      document.body.appendChild(banner);
-      navigate('lessonSlides');
-    };
+  const banner = document.createElement('div');
+  banner.textContent = (typeof pptxgen !== 'undefined') ? '✅ pptxgen is loaded and ready!' : '❌ pptxgen failed to load.';
+  banner.style.position = 'fixed';
+  banner.style.top = '10px';
+  banner.style.right = '10px';
+  banner.style.padding = '10px 16px';
+  banner.style.backgroundColor = (typeof pptxgen !== 'undefined') ? '#c6f6d5' : '#fed7d7';
+  banner.style.color = '#1a202c';
+  banner.style.border = '1px solid #ccc';
+  banner.style.fontSize = '14px';
+  banner.style.fontWeight = 'bold';
+  banner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
+  banner.style.borderRadius = '0.5rem';
+  banner.style.zIndex = '1000';
+  document.body.appendChild(banner);
+  navigate('lessonSlides');
+};
   </script>
+</body>
+</html>
+<!-- partial -->
+  
 </body>
 </html>
