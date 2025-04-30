@@ -1,199 +1,275 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>SlideBordBasic</title>
-  
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SlideBoard Basic</title>
 
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<html>
-<head>
-  <title>SlideBoard Basic</title>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.11.0/libs/pptxgen.umd.js"></script>
-<script>
-  window.addEventListener('error', function (e) {
-    const errorBanner = document.createElement('div');
-    errorBanner.textContent = `❌ Script Error: ${e.message}`;
-    errorBanner.style.position = 'fixed';
-    errorBanner.style.bottom = '10px';
-    errorBanner.style.right = '10px';
-    errorBanner.style.padding = '10px 16px';
-    errorBanner.style.backgroundColor = '#fed7d7';
-    errorBanner.style.color = '#1a202c';
-    errorBanner.style.border = '1px solid #ccc';
-    errorBanner.style.fontSize = '14px';
-    errorBanner.style.fontWeight = 'bold';
-    errorBanner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
-    errorBanner.style.borderRadius = '0.5rem';
-    errorBanner.style.zIndex = '1000';
-    document.body.appendChild(errorBanner);
-    setTimeout(() => errorBanner.remove(), 5000);
-  });
-</script>
-  <style>
-    .slide-preview {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-top: 1rem;
-      border-radius: 0.5rem;
-      color: #333;
-      cursor: move;
-    }
-    .clickable-list button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      background: #f1f1f1;
-      margin-bottom: 4px;
-      padding: 8px;
-      border: none;
-      border-radius: 0.25rem;
-      cursor: pointer;
-    }
-    .clickable-list button:hover {
-      background: #e0e0e0;
-    }
-  </style>
-</head>
-<body class="p-4 grid gap-6">
-  <div class="text-2xl font-bold">SlideBoard Basic</div>
-  <div class="flex gap-4">
-    <button class="rounded-2xl shadow px-4 py-2" onclick="navigate('lessonSlides')">Lesson to Slides</button>
-    <button class="rounded-2xl shadow px-4 py-2" onclick="navigate('templates')">Templates</button>
-    <button class="rounded-2xl shadow px-4 py-2" onclick="navigate('visualAids')">Visual Aids</button>
-    <button class="rounded-2xl shadow px-4 py-2" onclick="navigate('interactiveTools')">Interactive Tools</button>
-  </div>
-  <div class="grid grid-cols-2 gap-6">
-    <div id="lessonSlides" class="feature-section rounded-2xl shadow p-4">
-      <div class="font-semibold text-lg mb-2">📄 Lesson Plan to Slides</div>
-      <textarea id="lessonInput" class="w-full h-40 p-2 rounded border" placeholder="Paste your structured lesson note here..."></textarea>
-      <button class="mt-2 px-4 py-2 rounded bg-blue-500 text-white" onclick="generateSlides()">Generate Slides</button>
-      <div id="sampleSlides"></div>
-      <button class="mt-4 px-4 py-2 rounded bg-green-600 text-white" onclick="saveOrder()">💾 Save Order</button>
-      <button class="mt-4 px-4 py-2 rounded bg-purple-600 text-white" onclick="exportToPPTX()">📄 Export to PPTX</button>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.8.0/dist/pptxgen.bundle.js"></script>
+
+    <style>
+      .slide-preview {
+        border: 1px solid #ccc;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 0.5rem;
+        color: #333;
+        cursor: move;
+      }
+      .clickable-list button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        background: #f1f1f1;
+        margin-bottom: 4px;
+        padding: 8px;
+        border: none;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+      .clickable-list button:hover {
+        background: #e0e0e0;
+      }
+    </style>
+  </head>
+
+  <body class="p-4 grid gap-6">
+    <div class="text-2xl font-bold">SlideBoard Basic</div>
+
+    <div class="flex gap-4">
+      <button
+        class="rounded-2xl shadow px-4 py-2"
+        onclick="navigate('lessonSlides')"
+      >
+        Lesson to Slides
+      </button>
+      <button
+        class="rounded-2xl shadow px-4 py-2"
+        onclick="navigate('templates')"
+      >
+        Templates
+      </button>
+      <button
+        class="rounded-2xl shadow px-4 py-2"
+        onclick="navigate('visualAids')"
+      >
+        Visual Aids
+      </button>
+      <button
+        class="rounded-2xl shadow px-4 py-2"
+        onclick="navigate('interactiveTools')"
+      >
+        Interactive Tools
+      </button>
     </div>
-  </div>
-  <script>
-    let reorderedSlides = [];
-    let draggedIdx = null;
 
-    function navigate(section) {
-      document.querySelectorAll('.feature-section').forEach(div => div.style.display = 'none');
-      const target = document.getElementById(section);
-      if (target) target.style.display = 'block';
-    }
+    <div class="grid grid-cols-2 gap-6">
+      <div id="lessonSlides" class="feature-section rounded-2xl shadow p-4">
+        <div class="font-semibold text-lg mb-2">📄 Lesson Plan to Slides</div>
 
-    function generateSlides() {
-      const input = document.getElementById('lessonInput');
-      if (!input) return;
-      const text = input.value;
-      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+        <textarea
+          id="lessonInput"
+          class="w-full h-40 p-2 rounded border"
+          placeholder="Paste your structured lesson note here..."
+        ></textarea>
 
-      let slides = [];
-      let currentSlide = '';
-      let title = '';
+        <button
+          class="mt-2 px-4 py-2 rounded bg-blue-500 text-white"
+          onclick="generateSlides()"
+        >
+          Generate Slides
+        </button>
+        <div id="sampleSlides"></div>
 
-      lines.forEach((line) => {
-        if (line.match(/^\s*(Grade Level|Subject|Topic|Duration|Lesson Objectives|Prior Knowledge|Introduction|Body of the Lesson|Key Concept|Body|Concept 1|Concept 2|Concept 3|Conclusion|Activity|Assessment|Extension)/i)) {
-          if (currentSlide) {
-            slides.push({ title, content: currentSlide });
-            currentSlide = '';
+        <button
+          class="mt-4 px-4 py-2 rounded bg-green-600 text-white"
+          onclick="saveOrder()"
+        >
+          💾 Save Order
+        </button>
+        <button
+          class="mt-4 px-4 py-2 rounded bg-purple-600 text-white"
+          onclick="exportToPPTX()"
+        >
+          📄 Export to PPTX
+        </button>
+      </div>
+    </div>
+
+    <script>
+      let reorderedSlides = [];
+      let draggedIdx = null;
+
+      function navigate(section) {
+        document
+          .querySelectorAll(".feature-section")
+          .forEach((div) => (div.style.display = "none"));
+        const target = document.getElementById(section);
+        if (target) target.style.display = "block";
+      }
+
+      function generateSlides() {
+        const input = document.getElementById("lessonInput");
+        if (!input) return;
+        const text = input.value;
+        const lines = text
+          .split("\n")
+          .map((l) => l.trim())
+          .filter(Boolean);
+
+        let slides = [];
+        let currentSlide = "";
+        let title = "";
+
+        lines.forEach((line) => {
+          if (
+            line.match(
+              /^\s*(Grade Level|Subject|Topic|Duration|Lesson Objectives|Prior Knowledge|Introduction|Body of the Lesson|Key Concept|Body|Concept 1|Concept 2|Concept 3|Conclusion|Activity|Assessment|Extension)/i
+            )
+          ) {
+            if (currentSlide) {
+              slides.push({ title, content: currentSlide });
+              currentSlide = "";
+            }
+            title = line;
+          } else {
+            currentSlide += `<p>${line}</p>`;
           }
-          title = line;
-        } else {
-          currentSlide += `<p>${line}</p>`;
+        });
+
+        if (currentSlide) {
+          slides.push({ title, content: currentSlide });
         }
-      });
 
-      if (currentSlide) {
-        slides.push({ title, content: currentSlide });
+        reorderedSlides = [...slides];
+        renderSlides();
       }
 
-      reorderedSlides = [...slides];
-      renderSlides();
-    }
-
-    function renderSlides() {
-      const output = document.getElementById('sampleSlides');
-      if (!output) return;
-      output.innerHTML = '';
-      reorderedSlides.forEach((slide, idx) => {
-        const slideDiv = document.createElement('div');
-        slideDiv.className = 'slide-preview';
-        slideDiv.setAttribute('draggable', true);
-        slideDiv.setAttribute('data-index', idx);
-        slideDiv.innerHTML = `<h3>Slide ${idx + 1}: ${slide.title}</h3>${slide.content}`;
-        slideDiv.addEventListener('dragstart', dragStart);
-        slideDiv.addEventListener('dragover', dragOver);
-        slideDiv.addEventListener('drop', drop);
-        output.appendChild(slideDiv);
-      });
-    }
-
-    function saveOrder() {
-      console.log("Saved slide order:", reorderedSlides);
-      alert("Slide order saved successfully!");
-    }
-
-    function dragStart(e) {
-      draggedIdx = +e.target.getAttribute('data-index');
-    }
-
-    function dragOver(e) {
-      e.preventDefault();
-    }
-
-    function drop(e) {
-      const dropIdx = +e.target.closest('.slide-preview').getAttribute('data-index');
-      const movedSlide = reorderedSlides.splice(draggedIdx, 1)[0];
-      reorderedSlides.splice(dropIdx, 0, movedSlide);
-      renderSlides();
-    }
-
-    function exportToPPTX() {
-      if (typeof pptxgen === 'undefined') {
-        alert('pptxgen library failed to load. Please check your internet connection or CDN URL.');
-        return;
+      function renderSlides() {
+        const output = document.getElementById("sampleSlides");
+        if (!output) return;
+        output.innerHTML = "";
+        reorderedSlides.forEach((slide, idx) => {
+          const slideDiv = document.createElement("div");
+          slideDiv.className = "slide-preview";
+          slideDiv.setAttribute("draggable", true);
+          slideDiv.setAttribute("data-index", idx);
+          slideDiv.innerHTML = `<h3>Slide ${idx + 1}: ${slide.title}</h3>${
+            slide.content
+          }`;
+          slideDiv.addEventListener("dragstart", dragStart);
+          slideDiv.addEventListener("dragover", dragOver);
+          slideDiv.addEventListener("drop", drop);
+          output.appendChild(slideDiv);
+        });
       }
-      if (!reorderedSlides.length) {
-        alert('No slides to export. Please generate slides first.');
-        return;
-      }
-      console.log('Exporting slides with pptxgen...');
-      const pptx = new pptxgen();
-      reorderedSlides.forEach(slide => {
-        const slideObj = pptx.addSlide();
-        slideObj.addText(slide.title, { x: 0.5, y: 0.3, fontSize: 24, bold: true, color: '003366' });
-        const content = slide.content.replace(/<[^>]+>/g, '').trim();
-        slideObj.addText(content, { x: 0.5, y: 1, fontSize: 18, color: '000000', w: '90%', h: 5, wrap: true });
-      });
-      pptx.writeFile({ fileName: 'SlideBoard_Presentation.pptx' });
-    }
 
-    window.onload = () => {
-  const banner = document.createElement('div');
-  banner.textContent = (typeof pptxgen !== 'undefined') ? '✅ pptxgen is loaded and ready!' : '❌ pptxgen failed to load.';
-  banner.style.position = 'fixed';
-  banner.style.top = '10px';
-  banner.style.right = '10px';
-  banner.style.padding = '10px 16px';
-  banner.style.backgroundColor = (typeof pptxgen !== 'undefined') ? '#c6f6d5' : '#fed7d7';
-  banner.style.color = '#1a202c';
-  banner.style.border = '1px solid #ccc';
-  banner.style.fontSize = '14px';
-  banner.style.fontWeight = 'bold';
-  banner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.15)';
-  banner.style.borderRadius = '0.5rem';
-  banner.style.zIndex = '1000';
-  document.body.appendChild(banner);
-  navigate('lessonSlides');
-};
-  </script>
-</body>
-</html>
-<!-- partial -->
-  
-</body>
+      function saveOrder() {
+        console.log("Saved slide order:", reorderedSlides);
+        alert("Slide order saved successfully!");
+      }
+
+      function dragStart(e) {
+        draggedIdx = +e.target.getAttribute("data-index");
+      }
+
+      function dragOver(e) {
+        e.preventDefault();
+      }
+
+      function drop(e) {
+        const dropIdx = +e.target
+          .closest(".slide-preview")
+          .getAttribute("data-index");
+        const movedSlide = reorderedSlides.splice(draggedIdx, 1)[0];
+        reorderedSlides.splice(dropIdx, 0, movedSlide);
+        renderSlides();
+      }
+
+      // 🛠️ This is the upgraded export function
+      function exportToPPTX() {
+        if (typeof PptxGenJS === "undefined") {
+          alert(
+            "pptxgen library failed to load. Please check your internet connection or CDN URL."
+          );
+          return;
+        }
+        if (!reorderedSlides.length) {
+          alert("No slides to export. Please generate slides first.");
+          return;
+        }
+
+        console.log("Exporting slides with upgraded style...");
+        const pptx = new PptxGenJS(); // ✅ Correct usage
+
+        reorderedSlides.forEach((slide) => {
+          const slideObj = pptx.addSlide();
+
+          // Set background color
+          slideObj.background = { fill: "F0F8FF" };
+
+          // Add the slide title
+          slideObj.addText(slide.title.replace(":", ""), {
+            x: 0.5,
+            y: 0.3,
+            fontSize: 28,
+            bold: true,
+            color: "003366",
+            align: "center",
+            w: "90%",
+            h: 1,
+          });
+
+          // Clean content: remove HTML tags
+          const cleanContent = slide.content.replace(/<[^>]+>/g, "").trim();
+          const bulletPoints = cleanContent
+            .split("\n")
+            .filter((line) => line.trim() !== "");
+
+          // Add bullet points
+          slideObj.addText(
+            bulletPoints.map((line) => ({
+              text: line.trim(),
+              options: { bullet: true, fontSize: 20, color: "000000" },
+            })),
+            { x: 0.7, y: 1.5, w: "80%", h: 4 }
+          );
+        });
+
+        // Save the pptx file and show success message
+        pptx
+          .writeFile({ fileName: "SlideBoard_Presentation.pptx" })
+          .then(() => {
+            alert("✅ Presentation has been saved successfully!");
+          })
+          .catch((error) => {
+            console.error("❌ Error saving presentation:", error);
+            alert("❌ Failed to save the presentation.");
+          });
+      }
+
+      window.onload = () => {
+        const banner = document.createElement("div");
+        banner.textContent =
+          typeof PptxGenJS !== "undefined"
+            ? "✅ pptxgen is loaded and ready!"
+            : "❌ pptxgen failed to load.";
+        banner.style.position = "fixed";
+        banner.style.top = "10px";
+        banner.style.right = "10px";
+        banner.style.padding = "10px 16px";
+        banner.style.backgroundColor =
+          typeof PptxGenJS !== "undefined" ? "#c6f6d5" : "#fed7d7";
+        banner.style.color = "#1a202c";
+        banner.style.border = "1px solid #ccc";
+        banner.style.fontSize = "14px";
+        banner.style.fontWeight = "bold";
+        banner.style.boxShadow = "0 2px 4px rgba(0,0,0,0.15)";
+        banner.style.borderRadius = "0.5rem";
+        banner.style.zIndex = "1000";
+        document.body.appendChild(banner);
+
+        navigate("lessonSlides");
+      };
+    </script>
+  </body>
 </html>
